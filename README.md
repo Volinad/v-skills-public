@@ -11,8 +11,8 @@ A curated set of reusable skills for [Claude Code](https://docs.anthropic.com/en
 | [spec-compiler](#spec-compiler) | Documentation | Validates any documentation set through 18 methods, fixes issues autonomously |
 | [doc-compiler](#doc-compiler) | Documentation | Quality engine for non-technical writing with interactive setup |
 | [impl-auditor](#impl-auditor) | Documentation | Validates that code matches documentation, reports discrepancies |
-| [autoresearch](#autoresearch) | Optimization | Autonomous hypothesis-experiment-analysis loop for any measurable metric |
-| [agent-audit](#agent-audit) | Architecture | Audits agent systems against 12 production infrastructure primitives |
+| [autoresearch](#autoresearch) | Optimization | Autonomous optimization loop for any measurable metric. Based on [Karpathy's autoresearch](https://github.com/karpathy/autoresearch) |
+| [agent-audit](#agent-audit) | Architecture | Audits agent systems against 12 infrastructure primitives. Based on [Nate B Jones' audit](https://promptkit.natebjones.com/20260331_6yc_promptkit_1) |
 | [handoff](#handoff) | Session | Captures session context for seamless continuation or parallel work |
 | [youtube-transcript](#youtube-transcript) | Media | Extracts transcripts from YouTube videos in any language |
 
@@ -34,7 +34,7 @@ The skill is automatically detected and available in your Claude Code sessions. 
 
 Skills that validate, audit, and improve documents and specifications.
 
-#### spec-compiler
+#### [spec-compiler](./spec-compiler/)
 
 Universal documentation validation engine. Takes any set of documents, validates them through 18 methods organized in 5 groups, fixes issues autonomously, and stops when quality converges.
 
@@ -48,7 +48,7 @@ Universal documentation validation engine. Takes any set of documents, validates
 
 **A note on cost:** A full compilation (5-7 validation rounds until 2 consecutive clean passes) takes 5-15 minutes and consumes 300k-800k tokens total. That may seem expensive, but this skill is built for spec-driven development — catching inconsistencies and errors in documentation before they become bugs during implementation saves significantly more time and tokens downstream.
 
-#### doc-compiler
+#### [doc-compiler](./doc-compiler/)
 
 Document quality engine for non-technical writing — plans, ideas, proposals, reports, narratives. Same core architecture as spec-compiler but tailored for human-facing documents.
 
@@ -59,7 +59,7 @@ Document quality engine for non-technical writing — plans, ideas, proposals, r
 
 **Prerequisites:** At least one document. Git recommended but not required.
 
-#### impl-auditor
+#### [impl-auditor](./impl-auditor/)
 
 Validates that code matches documentation — bridges the gap between passing tests and spec-compliant implementation. Unlike spec-compiler and doc-compiler, impl-auditor only reports discrepancies without fixing them, because when code and docs disagree it requires human judgment to determine which is correct.
 
@@ -76,7 +76,7 @@ Validates that code matches documentation — bridges the gap between passing te
 
 Skills that automate experimental workflows and iterative improvement.
 
-#### autoresearch
+#### [autoresearch](./autoresearch/)
 
 Universal AI-driven research engine. Implements the autonomous hypothesis-experiment-analysis loop for optimizing anything with a measurable metric.
 
@@ -97,7 +97,7 @@ Universal AI-driven research engine. Implements the autonomous hypothesis-experi
 
 Skills for evaluating and planning agent systems and infrastructure.
 
-#### agent-audit
+#### [agent-audit](./agent-audit/)
 
 Structured interview that audits agentic AI systems against 12 production infrastructure primitives. Delivers a prioritized gap analysis with tiered verdicts and concrete next steps.
 
@@ -116,7 +116,7 @@ Structured interview that audits agentic AI systems against 12 production infras
 
 Skills for managing context across sessions and parallel work streams.
 
-#### handoff
+#### [handoff](./handoff/)
 
 Creates structured handoff documents that capture session context for the next session or a parallel session. Prevents loss of critical context across long-running projects.
 
@@ -133,7 +133,7 @@ Creates structured handoff documents that capture session context for the next s
 
 Skills for extracting and processing media content.
 
-#### youtube-transcript
+#### [youtube-transcript](./youtube-transcript/)
 
 Extracts subtitles and transcripts from YouTube videos by URL. Works with manual and auto-generated captions in any language. No API keys or subscriptions required.
 
