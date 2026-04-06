@@ -1,0 +1,23 @@
+{
+  "skill_name": "youtube-transcript",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Get the text from this video: https://youtube.com/watch?v=dQw4w9WgXcQ",
+      "expected_output": "Full transcript of the video printed as plain text",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "What is this video about? Give me a brief summary: https://youtu.be/jNQXAC9IVRw",
+      "expected_output": "A summary of the video based on the extracted transcript",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I need subtitles from this video in srt format, save to a file: https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "expected_output": "SRT file saved to disk with proper SRT formatting",
+      "files": []
+    }
+  ]
+}

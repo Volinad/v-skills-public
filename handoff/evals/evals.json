@@ -1,0 +1,23 @@
+{
+  "skill_name": "handoff",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We just finished refactoring the auth module in src/auth/ — switched from JWT to session-based. Migrations are written but not tested, frontend hasn't been updated yet. Create a handoff, I'll continue tomorrow in a new session.",
+      "expected_output": "Session handoff document in .handoffs/handoff-001.md with clear summary of auth refactoring state, what's done (JWT->session migration), what's pending (test migrations, update frontend), and key decisions made.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Hey, while we were fixing the bug in the payments module I noticed that logging doesn't work at all — logger.config points to a non-existent file and half the endpoints silently swallow errors. This is a separate task, create a branch handoff so I can spin up a parallel session to fix the logging while we continue with payments.",
+      "expected_output": "Branch handoff document in .handoffs/ describing the logging problem in detail — broken logger.config path, silent error swallowing in endpoints, enough context for a fresh session to start fixing without any knowledge of the payments bug work.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "We were fixing CSS on ProfileCard, but now I think we actually need to redo the user data schema — there's a ton of duplication between profiles and users tables, and that's the root cause of half the bugs. Let's switch to that.",
+      "expected_output": "The agent should recognize this as a scope CHANGE (from CSS/frontend to data model/backend — completely different topic) and suggest a session handoff. Should NOT just switch topics without offering to capture the current CSS work context first.",
+      "files": []
+    }
+  ]
+}

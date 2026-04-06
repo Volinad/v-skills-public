@@ -1,0 +1,18 @@
+# Local tools (not for public release)
+.tools/
+
+# Claude Code local settings
+.claude/
+
+# macOS
+.DS_Store
+
+# Debug artifacts
+.token-log/
+
+# Python
+__pycache__/
+*.pyc
+
+# Environment
+.env

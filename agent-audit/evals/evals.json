@@ -1,0 +1,23 @@
+{
+  "skill_name": "agent-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "agent audit — I have an agent built on Claude API that helps users write code, can read files, run terminal commands, and edit files. It's still a prototype for a small team.",
+      "expected_output": "Should start Phase 1 by asking for a more detailed description or proceed to Phase 2 follow-ups since enough info was given. Should calibrate for solo developer / hobbyist persona.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I want to evaluate our agent infrastructure. We have a multi-agent system running in production serving ~500 enterprise users. Agents handle document processing, data extraction, and workflow automation. We use LangGraph for orchestration, have Redis-based session persistence, and a custom tool registry. Permission system is role-based via our existing IAM.",
+      "expected_output": "Should recognize this as an engineering team / production system. Should skip basic Day One questions and probe for gaps in workflow state, idempotency, token budgeting, verification harness, and Week One primitives.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "agent audit — I haven't built anything yet but I'm planning to create an AI assistant for a SaaS product that will answer user questions based on documentation and perform simple actions like creating tickets or updating account settings",
+      "expected_output": "Should switch to design mode as instructed in guardrails. Should recommend which primitives to implement first, in what order, calibrated for a solo/small-team SaaS developer.",
+      "files": []
+    }
+  ]
+}
