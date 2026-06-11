@@ -11,6 +11,16 @@ Universal documentation validation engine. Takes any set of documents, validates
 
 Two agents — Writer (fixes) and Auditor (validates) — work in a loop. Auditor never sees Writer's process. Each validation group runs in fresh context. The loop continues until 2 consecutive clean rounds. Lead coordinates but never edits.
 
+## Why Holdout
+
+The holdout borrows ML's structure for a non-ML reason. Nothing here protects model parameters — an LLM Writer has none to overfit. What it protects is the validity of the measurement (L-049):
+
+- The gate's "clean" verdict means "no issues found by probes the fixer could not target". Overfitting is optimization against a fixed metric, not a property of weights — an in-context LLM optimizes against published evaluation criteria the same way (Goodhart's law). If Writer sees the exact checks, detection greps, and trap catalog, a clean round only proves the published detectors pass.
+- Knowing which checks run invites coverage gaming: effort flows to the probed paths and away from everything else.
+- Probes are run by an agent whose only incentive is to find problems. Writer's incentive is to declare the fix done.
+
+The split is **rules public, probes hidden**: writing conventions are given to Writer openly (see Writer conventions below) — hiding intent-level rules would only cause avoidable violations in fresh text. What stays Auditor-only is the probe set: which scenarios run, their detection procedures, and the accumulated trap catalog.
+
 ## Prerequisites
 
 - Git repository initialized (for tracking changes)
@@ -104,6 +114,15 @@ Every issue must be classified using these definitions. Auditor cannot reclassif
 
 Only **critical** and **medium** issues are blocking. Minor issues and observations never extend the loop.
 
+## Model Assignments
+
+Validated across runs (L-009, L-010, L-012, L-018, L-036, L-037):
+
+- **Lead: Opus.** Sonnet Leads violate role boundaries — they run verification themselves instead of spawning a new Auditor round.
+- **Writer: Sonnet.** Edits are fast; Lead verifies counts independently anyway.
+- **Auditor: alternate Opus/Sonnet between rounds.** The models have complementary blind spots — in three separate runs Sonnet caught implementation-blocking issues that multiple Opus auditors missed (an OR/AND ambiguity, a lookahead-bias contradiction, an undefined label threshold). Neither model is strictly superior; rotation is what catches the residue.
+- **Background agents (including the Phase 7 collector): Opus only.** Sonnet background agents have silently disappeared mid-task (no output file) in three confirmed runs.
+
 ## Lead Agent Rules
 
 You are the Lead. You coordinate. You follow these rules without exception.
@@ -160,11 +179,26 @@ Blended rates (per 1K tokens): opus=$0.033, sonnet=$0.0066, haiku=$0.0006.
 Writer is the only agent that edits project files. These rules apply to every Writer instance.
 
 - Writer ONLY edits files to fix issues reported by Auditor. No unsolicited improvements.
+- Before fixing an issue, Writer locates the Auditor's quoted text in the target file. If the quote cannot be found (grep returns nothing), Writer does not guess — it reports the issue back as a suspected false positive (Antipattern #34).
 - Writer DOES NOT validate or assess quality — that is Auditor's job.
-- Writer DOES NOT read or modify holdout files (validation-scenarios.md, antipatterns-checklist.md). Holdout principle.
+- Writer DOES NOT read or modify holdout files (validation-scenarios.md, antipatterns-checklist.md). Holdout principle (see Why Holdout).
 - Writer reports all changes as plain text summaries: what file, what changed, why.
 - After adding or removing items that affect counts, Writer recounts and reports the new total. Lead verifies independently.
 - Writer preserves document language according to Document Language Rules above.
+
+### Writer conventions
+
+These are rules of good documentation, not secrets — Writer is expected to know and apply them in every edit (L-049, L-038). Apply them to the text you touch; hunting for violations elsewhere is Auditor's job.
+
+- Every "configurable" states its default; every schedule states its timezone.
+- Acceptance criteria are testable — never "works correctly" / "works as expected".
+- When editing a concept, update EVERY site that mentions it: summary tables, adjacent sections, cross-references. Fixes that skip this introduce new issues at the fix boundary.
+- Do not introduce arithmetic or equivalence claims ("X equals Y", "derived from Z") without verifying the numbers from source.
+- Multi-criteria conditions use explicit quantifiers ("if NONE of [A, B, C] exist"), never prose "or"/"and".
+- When documenting ordering of equal-priority items, state the tie-breaker.
+- No TODO/TBD stubs in documents declared complete.
+
+What stays hidden from Writer is not these rules — it is the probe set Auditor runs against the result (see Why Holdout).
 
 ## Workflow
 
@@ -178,7 +212,7 @@ Writer is the only agent that edits project files. These rules apply to every Wr
 6. Show user: document inventory, selected methods, estimated groups
 7. **Token tracking**: create `.token-log/spec-compiler-<YYYYMMDD-HHmmss>.jsonl`
 8. Ask confirmation to start
-8. `git add -A && git commit -m "spec-compiler: pre-validation snapshot"`
+9. `git add -A && git commit -m "spec-compiler: pre-validation snapshot"`
 
 ### Phase 2: Validation Groups
 
@@ -191,6 +225,8 @@ For each group (1 through 5, skipping groups where no methods apply):
 3. Auditor reports: issues with severity (critical / medium / minor / observation)
 4. If critical issues found — Writer fixes them immediately before next group
 5. Non-critical issues accumulate for Phase 3
+
+For small document sets (a single doc or a few files), groups may run as parallel independent Auditor instances instead of sequentially — convergence of several groups on the same issue is a strong validity signal, while an issue found by only one group warrants scrutiny but can still be real (L-035). For large sets, keep groups sequential: context fills up and later methods get shallow treatment.
 
 **Auditor input**: only final documents + holdout files + LEARNINGS:
    - `.claude/skills/spec-compiler/holdout/validation-scenarios.md` (or global `~/.claude/skills/spec-compiler/holdout/`)
@@ -220,6 +256,8 @@ This loop runs without user intervention:
 6. **NEW Auditor** (fresh context, fresh agent instance) re-validates:
    - Changed files + files referencing changed files
    - Re-run the method group(s) that originally found the issues being fixed. If unsure: number changes → Group 1, cross-doc inconsistencies → Group 2, structural gaps → Group 3, unclear instructions → Group 4
+   - **Fix boundaries**: adjacent sections, tables, and cross-references that touch the same concept as each fix but were outside its scope. Writer fixes tend to introduce new issues exactly at these boundaries — a note added in one section while a table three sections away still describes the old behavior, or new text carrying an unverified mathematical claim (Antipattern #30).
+   - Auditor input is the same as Phase 2: final documents + holdout files + LEARNINGS.md.
    - **Lead provides minimal context**: list of changed files, one-line fix summary, previous round issue count (number only). Do NOT pass full issue details from prior rounds.
 7. Record: round number, issues found, issues fixed, model used
 
@@ -228,9 +266,11 @@ This loop runs without user intervention:
 - Do NOT lower your severity threshold to avoid returning empty-handed. If the only issues you can find are word choices or style preferences — that means the document is clean. Report zero issues.
 - Inflating severity (classifying style preferences as "medium") invalidates the round and wastes everyone's time. Use the severity definitions strictly.
 - Self-assess honestly: for each method, was your check deep or shallow? If >50% shallow — the round is NOT clean.
+- Every finding must quote the exact line text WITH its line number from the audited file. Before reporting, grep the quoted string in the file to confirm it exists. Under heavy ambient context (a large surrounding narrative that mentions related values) auditors have reported quotes that exist nowhere in the document — reconstructed from memory instead of read from disk (Antipattern #34). A finding whose quote cannot be grep-found is a false positive — discard it.
 
-8. **Loop condition**: continue until **2 consecutive clean Auditor rounds**
+8. **Loop condition**: continue until **2 consecutive clean Auditor rounds on different models**
    - "Clean" = no critical or medium issues
+   - The two clean rounds must come from different models — one model's evidence table is not self-trustworthy (Antipattern #34)
    - Minor issues and observations are non-blocking
    - All 18 applicable methods must have been covered across the full compilation
    - Safety limit: max 25 rounds. If not converging after 25 — stop, show convergence curve, ask user whether to continue or accept current state.
@@ -238,7 +278,7 @@ This loop runs without user intervention:
 ### Phase 5: Gate Decision
 
 Gate PASS requires:
-- 2 consecutive clean Auditor rounds (different models preferred)
+- 2 consecutive clean Auditor rounds on different models (required, not preferred — cross-model redundancy has repeatedly preserved verdict integrity where a single model misjudged: L-036, L-037, L-046)
 - All applicable methods covered with evidence
 - No critical or medium issues remaining
 - Convergence confirmed (issues per round decreased)
@@ -271,7 +311,7 @@ This phase captures methodology improvements. It runs as a **lightweight collect
    - Model comparison data (what Opus found vs Sonnet)
    - Method effectiveness for this document type
 4. Collector writes new L-entries to `LEARNINGS.md` with next L-number and appropriate status
-5. **Auto-promotion**: if a pattern appears 2+ times across LEARNINGS entries — collector creates a new holdout scenario or antipattern automatically
+5. **Auto-promotion**: if a pattern appears 2+ times across LEARNINGS entries — collector creates a new holdout scenario or antipattern automatically. If a learning implies a change to this skill's own instructions (method selection, model assignments, workflow phases, gate rules) — collector flags it in the final summary as "SKILL.md update suggested: …". Collector never edits SKILL.md; skill edits go through skill-creator.
 6. **Auto-archive**: entries with status MATERIALIZED that are already implemented in holdout/antipatterns — collector moves them to the "Archived" section at the bottom of LEARNINGS.md
 7. `git add -A && git commit -m "spec-compiler: update learnings"`
 8. **Token cost summary**: include estimated cost in the final summary line.
@@ -294,7 +334,15 @@ Not all 18 methods apply to every document set. Lead selects based on content:
 | Scripts / CI configs | 1, 3, 5, 6, 10 | 2, 4, 7, 8, 12, 13, 17 | 9, 11, 14, 15, 16, 18 |
 | API documentation | 1, 2, 3, 7, 9, 14 | 6, 8, 10, 12, 13, 17, 18 | 4, 5, 11, 15, 16 |
 | Guides / knowledge bases | 1, 7, 8, 15, 16, 17 | 4, 12, 13, 18 | 2, 3, 5, 6, 9, 10, 11, 14 |
+| Skill specification (SKILL.md) | 1, 4, 7, 8, 12 | 15, 17, 18 | 2, 3, 5, 6, 9, 10, 11, 13, 14, 16 |
+| ML/quant algorithm spec | 1, 7, 8, 12, 13 | 2, 15, 16, 18 | 3, 4, 5, 6, 9, 10, 11, 14, 17 |
 | Mixed / full project | ALL | — | — |
+
+Type-specific notes from validation runs:
+- **Skill specifications** (L-034): completeness audit (7) against a mature reference skill spec is the highest-value method — structural comparison caught 8 issues in one pass.
+- **ML/quant specs** (L-037, L-039): implementation dry run (13) finds the implementation-blocking criticals; adversarial methods find near zero. Schedule at least one Sonnet round running method 13 — that combination caught criticals all Opus rounds missed.
+- **Single-document sets** (L-041): broken cross-references and missing dependencies largely disappear; internal number mismatches, in-document terminology drift, and dry-run-visible gaps dominate. Shift weight from cross-reference methods (3, 5, 9) to internal consistency (7, 12, 13).
+- **Paired/bilingual sets** (L-048): the higher-precision variant carries the factual risk — weight its claim-by-claim (8) and ground-truth (14) audit harder; use the vaguer sibling as a wording reference, never force precision into it (Scenario 20).
 
 When in doubt, include the method. False positives (method finds nothing) are cheap. False negatives (skip method, miss issue) are expensive.
 
@@ -324,3 +372,8 @@ After completing all assigned methods, Auditor honestly assesses:
 - For each method: was it deep or shallow?
 - If >50% shallow — round is NOT clean, needs re-run
 - "Clean pass" with shallow checks = false confidence
+
+## Skill Files
+
+- `LEARNINGS.md` — cross-run insights, read by every Auditor instance; maintained by the Phase 7 collector.
+- `holdout/validation-scenarios.md`, `holdout/antipatterns-checklist.md` — Auditor-only checks. Writer must never read them (holdout principle).

@@ -4,7 +4,7 @@ This file is accessible ONLY to Auditor Agent. Writer Agent MUST NOT see it.
 
 ## Principle
 
-Holdout scenarios are analogous to holdout sets in ML. The development agent (Writer) doesn't know what specific checks Auditor will run, so it cannot optimize for them.
+Holdout scenarios are analogous to holdout sets in ML — with one clarification: nothing here protects model parameters (an LLM Writer has none to overfit). What is protected is the measurement. If the fixing agent knew which specific checks run and how they detect, a "clean" round would only prove that the published detectors pass (Goodhart's law), and effort would flow to the probed paths only (coverage gaming). Writing conventions themselves are NOT secret — Writer receives them openly in SKILL.md. What stays hidden is this probe set: which scenarios run, their procedures, and the trap catalog. See SKILL.md "Why Holdout" and L-049.
 
 ---
 
@@ -179,6 +179,8 @@ For all dates, versions, timelines, and sequences across documents:
 - "Currently using X" but architecture says "migrating to X"
 - Roadmap dates in the past with status still "planned"
 
+**Ground-truth note for snapshot/status docs:** when a document self-certifies VCS/filesystem state (a fixed-state snapshot, status report, release log), verify every release/version date against `git log` / tag timestamps — NOT against the prose narrative. Authors copy dates from the session narrative they were reading, and that date can be wrong. Trap: doc dates a release at several sites two days off from the release commit's own timestamp. Mark narrative-sourced dates explicitly (e.g. "(per narrative)"); precise release dates must be git-sourced. See L-047.
+
 ## Scenario 18: Scope Creep & Coverage Gaps
 
 For each document that declares its scope (intro, purpose statement, table of contents):
@@ -192,3 +194,34 @@ For each document that declares its scope (intro, purpose statement, table of co
 - Architecture doc includes deployment instructions that belong in ops guide
 - "See below for API reference" but API section has only "TODO"
 - Document title says "Complete Guide" but covers only 3 of 7 subsystems
+
+## Scenario 19: Source Attribution Verification
+
+When documentation attributes a value, boundary, behavior, or schema to a NAMED source ("aligned with `session_config`", "matches the `gateway` window", "per `RECORD_DTYPE`", "same boundary as function X"):
+
+1. Locate and read that EXACT named symbol's definition in the source — do not trust the doc's attribution.
+2. Confirm the named symbol actually exists (not renamed/removed).
+3. Confirm the quoted value/boundary actually appears in THAT symbol — not in a sibling function with a similar role.
+4. Treat code comments that repeat the doc's claim as NON-independent — if the doc is wrong, the comment is usually wrong too (they were written together).
+
+**Typical traps:**
+- "Aligned with `session_config` (08:00–20:00)" — but `session_config`'s actual boundary is 06:00; 08:00 belongs to a *different* function (`gateway.is_active_window`). Real value, wrong source.
+- "Matches the upstream session window" — but two different windows exist (ingestion vs. serving) and the doc cites the wrong one.
+- A doc and its mirrored code comment make the SAME false attribution — cross-checking them confirms nothing; only the cited source definition is ground truth.
+
+This is distinct from Scenario 15 (terminology drift) and the "same as X" identity trap (Antipattern #2): here the value may be real but is bound to the WRONG named entity, and the named entity is itself checkable.
+
+## Scenario 20: Paired / Bilingual Document Precision Asymmetry
+
+When the document set is a paired or bilingual representation of the SAME state (e.g. a precise technical snapshot + a plain-language or translated overview of it):
+
+1. Identify the higher-precision variant — the one carrying exact dates, counts, version strings, named-source attributions.
+2. Weight ITS claim-by-claim (M8) and ground-truth (M14) audit harder: the precise variant carries the higher factual risk. A vague variant ("early May", "a couple of modules") rarely carries precise-fact errors because it makes no precise claim to be wrong.
+3. Cross-check the precise variant's exact facts against BOTH ground truth AND the vaguer sibling. Where they disagree and the precise one is wrong, the vaguer sibling is often the accurate-wording reference — fix the precise doc toward truth, do NOT force precision into the vague doc.
+4. Do not down-rank the precise doc's risk just because the pair "mostly agrees" — agreement on vague phrasing proves little.
+
+**Typical traps:**
+- A precise snapshot dates a release to an exact (wrong) day; its plain-language sibling says "early May" (vague, therefore correct) — audit the precise one harder, use the vague one as wording reference.
+- A precise variant attributes a step to a specific named source while the vaguer variant describes it generically and correctly.
+
+See L-048.
