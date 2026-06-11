@@ -13,7 +13,7 @@ Two agents — Writer (fixes) and Auditor (validates) — work in a loop. Audito
 
 ## Why Holdout
 
-The holdout borrows ML's structure for a non-ML reason. Nothing here protects model parameters — an LLM Writer has none to overfit. What it protects is the validity of the measurement (L-049):
+The holdout borrows ML's structure for a non-ML reason. Nothing here protects model parameters — an LLM Writer has none to overfit. What it protects is the validity of the measurement:
 
 - The gate's "clean" verdict means "no issues found by probes the fixer could not target". Overfitting is optimization against a fixed metric, not a property of weights — an in-context LLM optimizes against published evaluation criteria the same way (Goodhart's law). If Writer sees the exact checks, detection greps, and trap catalog, a clean round only proves the published detectors pass.
 - Knowing which checks run invites coverage gaming: effort flows to the probed paths and away from everything else.
@@ -116,7 +116,7 @@ Only **critical** and **medium** issues are blocking. Minor issues and observati
 
 ## Model Assignments
 
-Validated across runs (L-009, L-010, L-012, L-018, L-036, L-037):
+Validated across many validation runs:
 
 - **Lead: Opus.** Sonnet Leads violate role boundaries — they run verification themselves instead of spawning a new Auditor round.
 - **Writer: Sonnet.** Edits are fast; Lead verifies counts independently anyway.
@@ -188,7 +188,7 @@ Writer is the only agent that edits project files. These rules apply to every Wr
 
 ### Writer conventions
 
-These are rules of good documentation, not secrets — Writer is expected to know and apply them in every edit (L-049, L-038). Apply them to the text you touch; hunting for violations elsewhere is Auditor's job.
+These are rules of good documentation, not secrets — Writer is expected to know and apply them in every edit. Apply them to the text you touch; hunting for violations elsewhere is Auditor's job.
 
 - Every "configurable" states its default; every schedule states its timezone.
 - Acceptance criteria are testable — never "works correctly" / "works as expected".
@@ -226,7 +226,7 @@ For each group (1 through 5, skipping groups where no methods apply):
 4. If critical issues found — Writer fixes them immediately before next group
 5. Non-critical issues accumulate for Phase 3
 
-For small document sets (a single doc or a few files), groups may run as parallel independent Auditor instances instead of sequentially — convergence of several groups on the same issue is a strong validity signal, while an issue found by only one group warrants scrutiny but can still be real (L-035). For large sets, keep groups sequential: context fills up and later methods get shallow treatment.
+For small document sets (a single doc or a few files), groups may run as parallel independent Auditor instances instead of sequentially — convergence of several groups on the same issue is a strong validity signal, while an issue found by only one group warrants scrutiny but can still be real. For large sets, keep groups sequential: context fills up and later methods get shallow treatment.
 
 **Auditor input**: only final documents + holdout files + LEARNINGS:
    - `.claude/skills/spec-compiler/holdout/validation-scenarios.md` (or global `~/.claude/skills/spec-compiler/holdout/`)
@@ -278,7 +278,7 @@ This loop runs without user intervention:
 ### Phase 5: Gate Decision
 
 Gate PASS requires:
-- 2 consecutive clean Auditor rounds on different models (required, not preferred — cross-model redundancy has repeatedly preserved verdict integrity where a single model misjudged: L-036, L-037, L-046)
+- 2 consecutive clean Auditor rounds on different models (required, not preferred — cross-model redundancy has repeatedly preserved verdict integrity where a single model misjudged)
 - All applicable methods covered with evidence
 - No critical or medium issues remaining
 - Convergence confirmed (issues per round decreased)
@@ -303,7 +303,7 @@ Show user the final summary. List non-blocking observations if any.
 
 This phase captures methodology improvements. It runs as a **lightweight collector agent** with fresh context — not as an extension of the exhausted main session.
 
-1. Lead spawns a **learning-collector agent** (background, fresh context, use Opus — Sonnet is unreliable as background agent per L-010/L-018)
+1. Lead spawns a **learning-collector agent** (background, fresh context, use Opus — Sonnet has repeatedly disappeared mid-task as a background agent)
 2. Collector reads: `VALIDATION-REPORT.md`, current `LEARNINGS.md`, and holdout files (`holdout/validation-scenarios.md`, `holdout/antipatterns-checklist.md`) — holdout files are needed to check what already exists before creating new entries
 3. Collector identifies:
    - New data patterns (Writer errors, recurring issues, document-type-specific traps)
@@ -339,10 +339,10 @@ Not all 18 methods apply to every document set. Lead selects based on content:
 | Mixed / full project | ALL | — | — |
 
 Type-specific notes from validation runs:
-- **Skill specifications** (L-034): completeness audit (7) against a mature reference skill spec is the highest-value method — structural comparison caught 8 issues in one pass.
-- **ML/quant specs** (L-037, L-039): implementation dry run (13) finds the implementation-blocking criticals; adversarial methods find near zero. Schedule at least one Sonnet round running method 13 — that combination caught criticals all Opus rounds missed.
-- **Single-document sets** (L-041): broken cross-references and missing dependencies largely disappear; internal number mismatches, in-document terminology drift, and dry-run-visible gaps dominate. Shift weight from cross-reference methods (3, 5, 9) to internal consistency (7, 12, 13).
-- **Paired/bilingual sets** (L-048): the higher-precision variant carries the factual risk — weight its claim-by-claim (8) and ground-truth (14) audit harder; use the vaguer sibling as a wording reference, never force precision into it (Scenario 20).
+- **Skill specifications**: completeness audit (7) against a mature reference skill spec is the highest-value method — structural comparison caught 8 issues in one pass.
+- **ML/quant specs**: implementation dry run (13) finds the implementation-blocking criticals; adversarial methods find near zero. Schedule at least one Sonnet round running method 13 — that combination caught criticals all Opus rounds missed.
+- **Single-document sets**: broken cross-references and missing dependencies largely disappear; internal number mismatches, in-document terminology drift, and dry-run-visible gaps dominate. Shift weight from cross-reference methods (3, 5, 9) to internal consistency (7, 12, 13).
+- **Paired/bilingual sets**: the higher-precision variant carries the factual risk — weight its claim-by-claim (8) and ground-truth (14) audit harder; use the vaguer sibling as a wording reference, never force precision into it (Scenario 20).
 
 When in doubt, include the method. False positives (method finds nothing) are cheap. False negatives (skip method, miss issue) are expensive.
 
@@ -375,5 +375,5 @@ After completing all assigned methods, Auditor honestly assesses:
 
 ## Skill Files
 
-- `LEARNINGS.md` — cross-run insights, read by every Auditor instance; maintained by the Phase 7 collector.
+- `LEARNINGS.md` — starts empty in a fresh installation; the Phase 7 collector appends insights from your validation runs, and every Auditor instance reads it.
 - `holdout/validation-scenarios.md`, `holdout/antipatterns-checklist.md` — Auditor-only checks. Writer must never read them (holdout principle).

@@ -4,7 +4,7 @@ This file is accessible ONLY to Auditor Agent. Writer Agent MUST NOT see it.
 
 ## Principle
 
-Holdout scenarios are analogous to holdout sets in ML — with one clarification: nothing here protects model parameters (an LLM Writer has none to overfit). What is protected is the measurement. If the fixing agent knew which specific checks run and how they detect, a "clean" round would only prove that the published detectors pass (Goodhart's law), and effort would flow to the probed paths only (coverage gaming). Writing conventions themselves are NOT secret — Writer receives them openly in SKILL.md. What stays hidden is this probe set: which scenarios run, their procedures, and the trap catalog. See SKILL.md "Why Holdout" and L-049.
+Holdout scenarios are analogous to holdout sets in ML — with one clarification: nothing here protects model parameters (an LLM Writer has none to overfit). What is protected is the measurement. If the fixing agent knew which specific checks run and how they detect, a "clean" round would only prove that the published detectors pass (Goodhart's law), and effort would flow to the probed paths only (coverage gaming). Writing conventions themselves are NOT secret — Writer receives them openly in SKILL.md. What stays hidden is this probe set: which scenarios run, their procedures, and the trap catalog. See SKILL.md "Why Holdout".
 
 ---
 
@@ -135,6 +135,7 @@ When documentation describes code structure (component registry, API catalog, de
 - Registry lists component X as used by [A, B] but source shows A, B, C use it
 - Document says "5 endpoints" but scanning route files reveals 7
 - Import graph in docs missing recently added modules
+- Non-obvious exports missed entirely: context providers, config exports, composite hooks — cross-check the full export surface (index.ts), not just component directories
 
 ## Scenario 15: Terminology Drift
 
@@ -179,7 +180,7 @@ For all dates, versions, timelines, and sequences across documents:
 - "Currently using X" but architecture says "migrating to X"
 - Roadmap dates in the past with status still "planned"
 
-**Ground-truth note for snapshot/status docs:** when a document self-certifies VCS/filesystem state (a fixed-state snapshot, status report, release log), verify every release/version date against `git log` / tag timestamps — NOT against the prose narrative. Authors copy dates from the session narrative they were reading, and that date can be wrong. Trap: doc dates a release at several sites two days off from the release commit's own timestamp. Mark narrative-sourced dates explicitly (e.g. "(per narrative)"); precise release dates must be git-sourced. See L-047.
+**Ground-truth note for snapshot/status docs:** when a document self-certifies VCS/filesystem state (a fixed-state snapshot, status report, release log), verify every release/version date against `git log` / tag timestamps — NOT against the prose narrative. Authors copy dates from the session narrative they were reading, and that date can be wrong. Trap: doc dates a release at several sites two days off from the release commit's own timestamp. Mark narrative-sourced dates explicitly (e.g. "(per narrative)"); precise release dates must be git-sourced.
 
 ## Scenario 18: Scope Creep & Coverage Gaps
 
@@ -216,12 +217,10 @@ This is distinct from Scenario 15 (terminology drift) and the "same as X" identi
 When the document set is a paired or bilingual representation of the SAME state (e.g. a precise technical snapshot + a plain-language or translated overview of it):
 
 1. Identify the higher-precision variant — the one carrying exact dates, counts, version strings, named-source attributions.
-2. Weight ITS claim-by-claim (M8) and ground-truth (M14) audit harder: the precise variant carries the higher factual risk. A vague variant ("early May", "a couple of modules") rarely carries precise-fact errors because it makes no precise claim to be wrong.
+2. Weight ITS claim-by-claim (M8) and ground-truth (M14) audit harder: the precise variant carries the higher factual risk. A vague variant ("mid-March", "a couple of modules") rarely carries precise-fact errors because it makes no precise claim to be wrong.
 3. Cross-check the precise variant's exact facts against BOTH ground truth AND the vaguer sibling. Where they disagree and the precise one is wrong, the vaguer sibling is often the accurate-wording reference — fix the precise doc toward truth, do NOT force precision into the vague doc.
 4. Do not down-rank the precise doc's risk just because the pair "mostly agrees" — agreement on vague phrasing proves little.
 
 **Typical traps:**
-- A precise snapshot dates a release to an exact (wrong) day; its plain-language sibling says "early May" (vague, therefore correct) — audit the precise one harder, use the vague one as wording reference.
+- A precise snapshot dates a release to an exact (wrong) day; its plain-language sibling says "mid-March" (vague, therefore correct) — audit the precise one harder, use the vague one as wording reference.
 - A precise variant attributes a step to a specific named source while the vaguer variant describes it generically and correctly.
-
-See L-048.
