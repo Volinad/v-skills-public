@@ -303,21 +303,22 @@ Show user the final summary. List non-blocking observations if any.
 
 This phase captures methodology improvements. It runs as a **lightweight collector agent** with fresh context — not as an extension of the exhausted main session.
 
-1. Lead spawns a **learning-collector agent** (background, fresh context, use Opus — Sonnet has repeatedly disappeared mid-task as a background agent)
-2. Collector reads: `VALIDATION-REPORT.md`, current `LEARNINGS.md`, and holdout files (`holdout/validation-scenarios.md`, `holdout/antipatterns-checklist.md`) — holdout files are needed to check what already exists before creating new entries
-3. Collector identifies:
-   - New data patterns (Writer errors, recurring issues, document-type-specific traps)
-   - Validation approaches that worked well or were missing
-   - Model comparison data (what Opus found vs Sonnet)
-   - Method effectiveness for this document type
-4. Collector writes new L-entries to `LEARNINGS.md` with next L-number and appropriate status
-5. **Auto-promotion**: if a pattern appears 2+ times across LEARNINGS entries — collector creates a new holdout scenario or antipattern automatically. If a learning implies a change to this skill's own instructions (method selection, model assignments, workflow phases, gate rules) — collector flags it in the final summary as "SKILL.md update suggested: …". Collector never edits SKILL.md; skill edits go through skill-creator.
-6. **Auto-archive**: entries with status MATERIALIZED that are already implemented in holdout/antipatterns — collector moves them to the "Archived" section at the bottom of LEARNINGS.md
-7. `git add -A && git commit -m "spec-compiler: update learnings"`
-8. **Token cost summary**: include estimated cost in the final summary line.
+**A learning exists to change what a future run does — that is the entire bar.** On a mature skill most runs produce zero new learnings, and that is the healthy, expected outcome, not a failure. Recording an instance of something the skill already handles changes no future behavior; it only grows a file every later run must read in full. The collector is held to the same integrity rule as the Auditor (Phase 4): finding nothing new is valid and valuable, and padding the file to "show work" is the same failure as an Auditor inflating severity to avoid an empty report.
+
+1. Lead spawns a **learning-collector agent** (background, fresh context, Opus — Sonnet background agents have vanished mid-task).
+2. Collector reads `VALIDATION-REPORT.md`, current `LEARNINGS.md`, and the holdout files — to see what the skill already does, so it does not re-record it.
+3. **Two-question test — apply to every candidate before writing it.** Write an L-entry only if BOTH hold:
+   - **Novel** — absent from SKILL.md, the holdout files, and existing entries. A fresh instance of an existing scenario/antipattern/gate is NOT novel.
+   - **Actionable** — it changes a future run: a new check, a method weighting, or a document-class posture. If you cannot state the novelty in one sentence, it is not worth keeping.
+4. **A reconfirmation is not a learning.** When a run re-demonstrates a pattern already in the gate/holdout/SKILL — model rotation catching a residual, a fix-boundary miss, M13-by-execution paying off — that goes in THIS run's VALIDATION-REPORT, never as a new entry and never as a dated tail on the existing one. Keep no "Nth confirmation" counters and no confirmation ledger: the gate is already materialized, so its evidence does not accumulate here.
+5. **Each kept entry is its reusable core** — the pattern plus the check it implies, in a few sentences, naming at most the ONE closest entry it refines. The audience is a future Auditor who needs the check; the run's specifics (which round, which model, which file) belong in the VALIDATION-REPORT, not here.
+6. **Promote or annotate.** A genuinely new pattern seen 2+ times across entries → materialize it as a holdout scenario/antipattern. A specialization of an existing one → annotate that one, don't add a standalone entry. A learning that implies changing this skill's own instructions (method selection, model assignments, phases, gate rules) → flag it in the final summary as "SKILL.md update suggested: …"; the collector never edits SKILL.md (skill edits go through skill-creator).
+7. **Archive what is already implemented.** Once an entry's substance lives anywhere a future run reads it — a holdout scenario/antipattern OR SKILL.md / phase logic / the gate — collapse it to a one-line pointer in the Archived index. The test is "is it implemented where a run will encounter it?", not the NOTED/MATERIALIZED label — this is what stops load-bearing-but-already-baked entries (like the model-rotation gate) from growing confirmation tails.
+8. `git add -A && git commit -m "spec-compiler: update learnings"`
+9. **Token cost summary**: include estimated cost in the final summary line.
    Calculate: total_tokens × blended_rate (opus=$0.033/1K, sonnet=$0.0066/1K, haiku=$0.0006/1K).
    Example: "~168k tokens (~$5.54), ~2 minutes". The cost goes in every DONE status line too.
-9. Print: `=== Spec Compiler: COMPLETE ===`
+10. Print: `=== Spec Compiler: COMPLETE ===`
 
 After this message: do NOT start new tasks. Compilation is done.
 
@@ -375,5 +376,5 @@ After completing all assigned methods, Auditor honestly assesses:
 
 ## Skill Files
 
-- `LEARNINGS.md` — starts empty in a fresh installation; the Phase 7 collector appends insights from your validation runs, and every Auditor instance reads it.
+- `LEARNINGS.md` — starts empty in a fresh installation; the Phase 7 collector appends an insight only when a run surfaces something genuinely new, and every Auditor instance reads it. Holds un-promoted, still-actionable insights plus a one-line Archived index of patterns already baked into SKILL/holdout. It is NOT a run log — reconfirmations and per-run narratives live in each run's VALIDATION-REPORT.
 - `holdout/validation-scenarios.md`, `holdout/antipatterns-checklist.md` — Auditor-only checks. Writer must never read them (holdout principle).
