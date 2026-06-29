@@ -258,17 +258,17 @@ Generate `IMPL-AUDIT-REPORT.md`:
 
 ### Phase 5: Learn
 
-This phase captures methodology improvements. It runs as a **lightweight collector agent** with fresh context — use Opus (Sonnet is unreliable as a background agent for synthesis tasks).
+This phase captures methodology improvements. It runs as a **lightweight collector agent** with fresh context — Opus (Sonnet is unreliable as a background agent for synthesis tasks).
 
-1. Collector reads: `IMPL-AUDIT-REPORT.md`, current `LEARNINGS.md` (at `~/.claude/skills/impl-auditor/LEARNINGS.md` or `.claude/skills/impl-auditor/LEARNINGS.md` in project), and holdout files (`holdout/audit-procedures.md`) — holdout files are needed to check what already exists before creating new entries.
-2. Collector identifies:
-   - New patterns (common types of drift found, framework-specific gotchas)
-   - Methods that found the most issues vs. the fewest
-   - Cases where structural mapping was insufficient to guide later phases
-   - Project-type-specific traps (e.g., FastAPI + SQLAlchemy common drifts)
-3. Collector writes new L-entries to `LEARNINGS.md` with next L-number and appropriate status.
-4. **Auto-promotion:** if a pattern appears 3+ times across LEARNINGS entries from different projects — collector creates a new holdout scenario in `holdout/audit-procedures.md` automatically. Two occurrences may reflect a single project's quirks; three across different contexts confirms a durable pattern.
-5. **Auto-archive:** entries with status MATERIALIZED that are already implemented in holdout files — collector moves them to the "Archived" section at the bottom of LEARNINGS.md.
+**A learning exists to change what a future audit does — that is the entire bar.** On a mature skill most runs produce zero new learnings, and that is the healthy, expected outcome, not a failure. Recording an instance of something the skill already does changes no future audit; it only grows a file every later run must read in full. Hold the collector to the same standard as the audit itself: finding nothing new is valid and valuable, and padding the file to "show work" is a defect, not diligence.
+
+1. Collector reads `IMPL-AUDIT-REPORT.md`, current `LEARNINGS.md` (at `~/.claude/skills/impl-auditor/LEARNINGS.md` or the project-local copy), and the holdout file (`holdout/audit-procedures.md`) — to see what the skill already does, so it does not re-record it.
+2. **Two-question test — apply to every candidate before writing it.** Write an L-entry only if BOTH hold:
+   - **Novel** — absent from the holdout procedures, the known-false-positive guards, and existing entries. A fresh instance of an existing procedure/FP-guard is NOT novel.
+   - **Actionable** — it changes a future audit: a new check, a severity-calibration rule, or a project-type posture. If you cannot state the novelty in one sentence, it is not worth keeping.
+3. **Reconfirmations, and counting toward promotion.** This skill promotes a pattern only after 3 occurrences across different projects, so an UN-promoted entry may legitimately log a 2nd/3rd sighting — but as ONE terse line (date + context + "Nth occurrence"), never a fresh paragraph. Once a pattern is promoted to a holdout procedure it is done: further sightings go in the run's IMPL-AUDIT-REPORT, never back into LEARNINGS. Keep no confirmation ledger for an already-materialized procedure.
+4. **Auto-promotion:** a genuinely new pattern seen 3+ times across different projects → materialize it as a holdout procedure or a Known-False-Positive guard. Two occurrences may be one project's quirk; three across contexts confirms a durable pattern. A specialization of an existing procedure → annotate that one, don't add a standalone entry. A learning that implies changing this skill's own instructions → flag it in the final summary as "SKILL.md update suggested: …"; the collector never edits SKILL.md (skill edits go through skill-creator).
+5. **Archive what is already implemented.** Once an entry's substance lives anywhere a future audit reads it — a holdout procedure/FP-guard OR SKILL.md/phase logic — collapse it to a one-line pointer in the Archived index, regardless of the NOTED/MATERIALIZED label. Keep each surviving entry to its reusable core (the pattern + the check), naming at most the ONE closest entry it refines; run specifics (which change, which file, which input) belong in the IMPL-AUDIT-REPORT.
 6. `git commit -m "impl-auditor: update learnings"`
 7. **Token cost summary**: include estimated cost in the final summary line.
    Calculate: total_tokens × blended_rate (opus=$0.033/1K, sonnet=$0.0066/1K, haiku=$0.0006/1K).
