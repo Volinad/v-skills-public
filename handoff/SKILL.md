@@ -37,6 +37,10 @@ Use context to infer the type: if the user says "ending", "stopping", "tomorrow"
 or similar — it's a **session** handoff. If they say "split off", "parallel", "side task", "meanwhile",
 or similar — it's a **branch** handoff. If neither signal is present, ask the user which type they want.
 
+Beyond creating, there's a third motion: **updating** a handoff this session already wrote or
+picked up, to fold in newer work ("update the handoff with what we just did"). That's an
+in-place edit of the same file, not a new handoff — see "Updating a handoff in place" below.
+
 ## Where handoffs live
 
 All handoffs go in `.handoffs/` at the project root. Create this directory if it doesn't exist.
@@ -45,8 +49,12 @@ Project root is the directory containing `.git` (for git repos) or the current w
 (for non-git projects).
 
 File naming: `handoff-NNN.md` where NNN is zero-padded to 3 digits (001, 002, 003...).
-To determine the next number, find the highest existing number in `.handoffs/` and add 1.
-If the directory is empty, start at 001.
+The number is the highest existing number in `.handoffs/` plus 1 (start at 001 if the
+directory is empty) — but **don't pick it now.** Claim it atomically as the very last step,
+after the body is written (see "Claiming the number" below). Choosing it up front is exactly
+what makes parallel sessions collide: writing a handoff takes minutes, and a second session
+that grabs the same number meanwhile will silently overwrite your file — this skill doesn't
+commit, so there's no git safety net, and the same filename means a lost handoff.
 
 ## Handoff document structure
 
@@ -58,6 +66,7 @@ Use this template:
 **Session name:** [session name + handoff number]
 **Type:** session | branch
 **Created:** YYYY-MM-DD HH:MM (local time)
+<!-- Add **Updated:** YYYY-MM-DD HH:MM (local time) when you refresh this handoff in place (see "Updating a handoff in place"). Omit on first creation. -->
 **Branch:** [current git branch, if in a git repo]
 **Picked up:** no
 **Status:** [one-line summary of where things stand]
@@ -190,6 +199,84 @@ every decision rationale, every "we tried X and it didn't work because Y" matter
 Avoid vague language like "continue the work" or "fix the remaining issues". Instead:
 "The migration script at `db/migrate_v3.py` fails on line 47 when the `users` table
 has NULL values in the `email` column. The fix is probably a COALESCE but needs testing."
+
+## Claiming the number (do this last)
+
+**The numbered file `handoff-NNN.md` comes into existence ONLY through the atomic claim
+below — never created with the Write tool, and never at the start.** Your instinct will be
+to pick a number and immediately write `handoff-101.md`; that instinct is the collision bug —
+two parallel sessions both pick 101 and the second's write silently clobbers the first. So
+keep the body out of any numbered file until the very end.
+
+Write the entire handoff body first (in your reply, or a uniquely-named non-numbered draft),
+using a placeholder like `NNN` wherever the handoff's own number appears (the title line, the
+"Session name" field). Only once the body is ready, claim a number — at the last possible
+moment, with an atomic create so two sessions can never land on the same file:
+
+```bash
+cd "<project-root>/.handoffs"
+n=$(( $(ls handoff-[0-9]*.md 2>/dev/null | sed -E 's/.*handoff-0*([0-9]+)\.md/\1/' | sort -n | tail -1) + 1 ))
+# `set -C` (noclobber) makes `>` fail if the file already exists, so this create is atomic.
+# If a parallel session claimed this number a moment ago, the create fails and we bump.
+until ( set -C; : > "$(printf 'handoff-%03d.md' "$n")" ) 2>/dev/null; do n=$((n+1)); done
+printf 'Claimed handoff-%03d.md\n' "$n"
+```
+
+The empty file now reserves your number — no concurrent session can take it, because their
+atomic create on the same name fails. Then write the body into that exact file, substituting
+the real number for the `NNN` placeholder. (The file already exists as the empty reservation,
+so Read it once — it'll be empty — then Write the full content; don't delete and recreate it,
+or you reopen the race.)
+
+Why atomic, and not just "pick the number later"? Late alone isn't enough — two sessions
+finishing within the same few seconds would still collide on a plain "highest + 1". The
+atomic create is a real mutex. And note what's doing the work: the `.handoffs/` directory
+itself is the registry, so the number is always derived from what actually exists (it can't
+drift) and the filesystem guarantees uniqueness — no separate "next number" file to maintain
+or leak a number when a session is abandoned.
+
+## Updating a handoff in place (no new number)
+
+Handoffs are often kept alive within one session: you write one, the user keeps working
+("keep going, finish X"), then asks you to fold that progress in — "update the handoff with
+what we just did", "refresh the handoff before we stop". This is an UPDATE of the existing
+file, not a new handoff: overwrite the SAME `handoff-NNN.md` and do NOT claim a new number.
+
+Claiming a fresh number here is wrong on two counts: it leaves the older snapshot behind as a
+stale `Picked up: no` file that resurfaces as an unpicked handoff in the next session, and it
+fragments one evolving snapshot across several files. One live handoff you keep current is what
+the user wants.
+
+**How to update:**
+1. **Target the handoff this session owns** — the one you created or picked up earlier in this
+   conversation (you already know its number). Do NOT re-derive "highest + 1" and do NOT open a
+   different handoff.
+2. **Read it, then Write the refreshed body back to the same path.** Fold the new work into
+   `Status`, `What was done`, `Current state`, and `Next steps`; append to `Errors & workarounds`
+   / `Learnings` / `Backlog` as needed. Keep the original `Created:` line and set/refresh an
+   `**Updated:** YYYY-MM-DD HH:MM (local time)` line beneath it.
+3. **Leave `Picked up:` unchanged.** You're keeping the handoff current for the next session, not
+   consuming it.
+4. **No atomic claim, no number bump.** The "create the numbered file only via the atomic claim"
+   rule guards two sessions racing for the *same new number* — it does not apply here, because you
+   already own this file and take no new number. A plain Read + Write is correct and safe.
+
+After updating, tell the user the path and carry on — an in-place refresh is not itself a reason
+to end the session.
+
+**Update in place vs. claim a new number — how to decide:**
+- **Update in place** when this session already owns a handoff and the user asks to refresh it
+  with what you've since done. This is the common case, and the default whenever a current
+  handoff exists.
+- **Claim a new number** when: this session has no handoff of its own yet; the user explicitly
+  asks for a fresh handoff / a milestone snapshot; or the topic has shifted enough that it's
+  logically a different handoff (a scope *change* — see "Proactive handoff suggestions").
+- **When it's genuinely ambiguous** (you've done a lot since, and it's unclear whether the user
+  wants the old one refreshed or a new snapshot), ask — one short question beats guessing.
+
+If context was compacted and you no longer remember which handoff is yours, don't guess a number:
+check `.handoffs/` for the most recent one matching this line of work and confirm with the user
+before overwriting it.
 
 ## After writing the handoff
 
