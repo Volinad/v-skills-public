@@ -124,6 +124,8 @@ Creates structured handoff documents that capture session context for the next s
 - **Two handoff types:**
   - **Session handoff** — wrap up current work for continuation tomorrow
   - **Branch handoff** — spin off a parallel session for a separate task
+- **Collision-safe numbering** — the handoff number is claimed atomically at the very last step, so parallel sessions writing handoffs at the same time never overwrite each other
+- **In-place updates** — "update the handoff with what we just did" refreshes the same document instead of leaving a trail of stale snapshots
 - **Auto-pickup** — next session automatically detects unpicked handoffs and continues
 - **Structured format** — captures decisions, progress, blockers, next steps, and key files
 
