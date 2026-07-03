@@ -6,8 +6,9 @@ description: >
   "сделай хэндофф", "wrap up", "let's stop here", "split this off", "start a new session",
   "записать что сделали", "record what we did", "продолжу завтра", "I'll continue tomorrow",
   "capture context for a parallel session", "save progress", "that's all for today", "pick this up later".
-  PROACTIVELY suggest this skill when ANY of these conditions are true: (1) context window
-  is getting long and you have accumulated unrecorded decisions or TODOs, (2) user says
+  PROACTIVELY suggest this skill when ANY of these conditions are true: (1) the context
+  window is ~80% consumed — warning the owner at that point is MANDATORY, early enough to
+  finish the current task and still write a good handoff, (2) user says
   "давай закончим", "на сегодня всё", "в следующий раз", "let's wrap up", "done for today",
   "next time", "let's call it a day", (3) a complex
   multi-session project is being discussed, (4) you are about to lose important context
@@ -69,6 +70,30 @@ session already owns ("Updating a handoff in place").
 The same consent rule covers branch handoffs: offer ("want me to write this up as a branch
 handoff for a parallel session?"), write on OK — the owner runs the session topology, you
 don't.
+
+## Window watch — warn at ~80%
+
+The consent rule limits WRITING a handoff, not warning about the window. Watching the window
+is your duty, and the warning is mandatory: the worst outcome this skill exists to prevent is
+a session dying WITHOUT a handoff, and the second worst is a handoff scribbled into the last
+5% of the window — too cramped to be any good.
+
+When the context window is around 80% consumed (use whatever signal your harness provides —
+a context meter, low-context or compaction warnings; if none, estimate from conversation
+length), say so in your very next reply, whatever else that reply contains:
+
+> The context window is ~80% used. I can finish the current task — after that we should
+> decide about a handoff while there's still room to write a good one.
+
+Don't bury it mid-paragraph and don't wait for a natural pause — the owner may be watching
+another session, and 80% is the moment they can still redirect you. If work continues and
+the decision hasn't been made, repeat the warning as the window tightens.
+
+**The one exception to the consent rule:** if the window reaches a critical level (~95%) and
+the owner hasn't responded to your warnings, write the handoff without waiting — and say
+plainly that you did it and why. An unrequested handoff can be updated or superseded; a
+context that dies unrecorded is gone. This exception is for owner-absent emergencies only —
+it is never a license to skip the 80% warning.
 
 ## Where handoffs live
 
@@ -383,7 +408,8 @@ Suggest a handoff when you notice:
 
 - The scope is **changing** — the user is asking about something substantially different
   from what you've been working on (not just more of the same)
-- Context is getting long and you're starting to lose track of earlier details
+- The context window is ~80% consumed (see "Window watch" — that warning is mandatory), or
+  you're starting to lose track of earlier details
 - A side-task emerged that would benefit from dedicated focus in parallel
 - You've hit a blocker that requires a fresh perspective
 
