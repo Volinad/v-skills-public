@@ -176,7 +176,12 @@ branch flow instead:
 ```bash
 git push || {
   # Rejected → another session pushed first and may have taken your number.
-  git pull --rebase
+  # --autostash: in a shared working tree, other sessions' UNCOMMITTED edits are
+  # normal, and a plain pull --rebase refuses on a dirty tree. Autostash carries
+  # them through and re-applies after the rebase ("Applied autostash"). Glance at
+  # the incoming commits first: if one touches a locally-dirty file, the re-apply
+  # itself can conflict — git then parks the edits in `git stash` and warns.
+  git pull --rebase --autostash
   # NORMAL case: the rebase stops with a conflict in the log — both sessions
   # appended at the same tail of the same append-only file:
   #   CONFLICT (content): Merge conflict in docs/EVOLUTION-LOG.md
@@ -239,9 +244,10 @@ tentative until the very end:
    before you commit — another session may have appended in the meantime.
 2. Commit, then **push immediately** (when a remote exists) — the push is what actually
    claims the number. Whoever pushes first owns it.
-3. If the push is rejected (someone else took the number), `git pull --rebase` — expect this
-   to stop with a content conflict in the log (both sessions appended at the same tail; this
-   is the normal case, not an error). Resolve by keeping both entries — theirs first, yours
+3. If the push is rejected (someone else took the number), `git pull --rebase --autostash`
+   (autostash carries other sessions' uncommitted edits in a shared tree through the rebase) —
+   expect this to stop with a content conflict in the log (both sessions appended at the same
+   tail; this is the normal case, not an error). Resolve by keeping both entries — theirs first, yours
    after, renumbered to the next free EVO-NNN — remove the conflict markers, `git add`, and
    `git rebase --continue`. Your commit is now at HEAD and unpushed, so `git commit --amend`
    is safe to fix the commit label to match. Then push again. The number lives in only those
