@@ -288,8 +288,17 @@ Once the handoff file is saved, tell the user the full file path.
 
 ## Picking up a handoff
 
-At session start, scan all files in `.handoffs/` for `Picked up: no`. If there are
-unpicked handoffs:
+At session start, scan all files in `.handoffs/` for `Picked up: no`.
+
+**The user named a handoff → that IS the choice.** If the user's message already identifies
+one ("look at handoff-015", "continue from 015", a path, any unambiguous reference) — pick it
+up immediately: flip `Picked up: yes`, answer whatever else the message asked, and start its
+work. No list, no confirmation question — asking "which one?" makes the user repeat what they
+already said. The branches below apply only when NO handoff was named. (Branch handoffs make
+multiple unpicked handoffs a normal standing state, so "multiple → ask" is for a session that
+starts blind, not a veto over the user's explicit instruction.)
+
+If there are unpicked handoffs and none was named:
 
 - **One unpicked**: pick it up immediately — no questions asked. Change `Picked up: no`
   to `Picked up: yes` and present:
@@ -315,17 +324,17 @@ are multiple, or auto-pick if there's only one.
 
 ## Auto-register in project CLAUDE.md
 
-The first time you create a handoff in a project, check if the project's CLAUDE.md
-(at `.claude/CLAUDE.md`) contains a handoff instruction. If it doesn't, append this block:
+The first time you create a handoff in a project, check whether the project's CLAUDE.md — root
+`CLAUDE.md` first, then `.claude/CLAUDE.md` — already contains a handoff instruction. If neither
+does, append this block to whichever file exists (create root `CLAUDE.md` if neither):
 
 ```markdown
 
 ## Handoffs
 
-At session start: scan `.handoffs/` for files where `Picked up: no`, list them to the user, and follow directives of the one they choose.
+At session start: scan `.handoffs/` for files where `Picked up: no`. If the user's first message names a handoff ("look at handoff-NNN", "continue from NNN") — that IS the choice: pick it up and start, no confirmation. Otherwise list the unpicked ones and follow the one the user chooses.
 ```
 
-Create `.claude/CLAUDE.md` if it doesn't exist. If it already exists, append at the end.
 This ensures future sessions automatically pick up handoff context without the user having
 to remind the agent.
 
