@@ -14,7 +14,10 @@ description: >
   that the next session will need, (5) scope is changing to a different topic, (6) a
   side-task emerged that deserves a parallel session. If you are ending a session that
   involved significant work and have NOT suggested a handoff — this is a bug in your
-  behavior. Handoffs are not optional for non-trivial sessions.
+  behavior. Handoffs are not optional for non-trivial sessions. The mirror rule is equally
+  binding: SUGGEST means ask — never CREATE a handoff the user didn't explicitly request.
+  Finishing your assigned tasks with context window to spare is a reason to ask for the
+  next chunk of work, not to write a handoff.
 ---
 
 # Handoff
@@ -40,6 +43,32 @@ or similar — it's a **branch** handoff. If neither signal is present, ask the 
 Beyond creating, there's a third motion: **updating** a handoff this session already wrote or
 picked up, to fold in newer work ("update the handoff with what we just did"). That's an
 in-place edit of the same file, not a new handoff — see "Updating a handoff in place" below.
+
+## The owner decides — you propose
+
+A handoff is written on the owner's explicit go-ahead, never on your own initiative. The
+trigger phrases in this skill's description ("make a handoff", "wrap up", "I'll continue
+tomorrow", "let's stop here") ARE that go-ahead. Everything else — including every condition
+on the "proactively suggest" list — licenses you to OFFER a handoff, not to write one.
+
+The costly failure mode is **finishing early**: you complete everything the picked-up handoff
+assigned while most of the context window is still free. Completion feels like the end of the
+session — it is not. The window is paid for, your context is warm, and in a multi-session plan
+the owner usually has the next chunk ready. A handoff written unbidden at that moment forces
+the owner to either accept a premature stop or ask for more work and have the fresh handoff
+rewritten. Instead, report and ask:
+
+> All handoff tasks are done, and there's plenty of context window left. I can take the next
+> chunk of the plan in this same session — or, if we're stopping here, I'll write the handoff.
+> Which will it be?
+
+Then WAIT for the answer. Write the handoff only after the explicit command. If more work
+follows in this window, you'll write it once, current, at the real end — or refresh one this
+session already owns ("Updating a handoff in place").
+
+The same consent rule covers branch handoffs: offer ("want me to write this up as a branch
+handoff for a parallel session?"), write on OK — the owner runs the session topology, you
+don't.
 
 ## Where handoffs live
 
@@ -363,3 +392,8 @@ is normal — that's what sessions are for.
 
 Frame it naturally: "This looks like a different problem from what we've been doing —
 want me to write a handoff so you can start a fresh session for it?"
+
+Suggesting is where your initiative ends. Whatever prompted the suggestion — a scope change,
+a long context, a completed backlog — the handoff itself is written only after the user says
+so (see "The owner decides — you propose"). And a completed backlog is not on the suggestion
+list at all: with window to spare, first ask for the next chunk of work.
