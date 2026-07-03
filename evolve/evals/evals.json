@@ -1,0 +1,23 @@
+{
+  "skill_name": "evolve",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I just fixed the timezone bug in frontend/utils/time.ts — the chart was showing UTC instead of the user's local time because we parsed the server timestamp without a zone. Document this change properly.",
+      "expected_output": "One EVO-NNN entry appended to docs/EVOLUTION-LOG.md (category ux or bugfix; root cause about zone-less timestamp parsing; an actionable 'SPEC MUST/ALWAYS/NEVER' Lesson), commit `evo(EVO-NNN)`, push if a remote exists, and the mandatory summary report.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "/evolve — we bumped API retry attempts from 3 to 5 in backend/config.py after seeing production timeouts, and added exponential backoff in backend/net/client.py",
+      "expected_output": "ONE EVO entry covering both related changes (not two entries), category config/performance, both files listed with per-file notes, committed as evo(EVO-NNN) and pushed; number finalized at commit time.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "This project doesn't have an evolution log yet — set one up like in my other projects, and register the convention so future sessions follow it automatically.",
+      "expected_output": "First-time setup: docs/EVOLUTION-LOG.md created with the header, a mandate block appended to root CLAUDE.md (or .claude/CLAUDE.md; root created if neither exists), push clause included only if the repo has a remote, and the discipline confirmed with the user.",
+      "files": []
+    }
+  ]
+}

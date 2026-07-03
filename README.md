@@ -14,6 +14,7 @@ A curated set of reusable skills for [Claude Code](https://docs.anthropic.com/en
 | [autoresearch](#autoresearch) | Optimization | Autonomous optimization loop for any measurable metric. Based on [Karpathy's autoresearch](https://github.com/karpathy/autoresearch) |
 | [agent-audit](#agent-audit) | Architecture | Audits agent systems against 12 infrastructure primitives. Based on [Nate B Jones' audit](https://promptkit.natebjones.com/20260331_6yc_promptkit_1) |
 | [handoff](#handoff) | Session | Captures session context for seamless continuation or parallel work |
+| [evolve](#evolve) | Session | Post-development change journal — root cause + lesson for every fix |
 | [youtube-transcript](#youtube-transcript) | Media | Extracts transcripts from YouTube videos in any language |
 
 ## Installation
@@ -128,6 +129,17 @@ Creates structured handoff documents that capture session context for the next s
 - **In-place updates** — "update the handoff with what we just did" refreshes the same document instead of leaving a trail of stale snapshots
 - **Auto-pickup** — next session automatically detects unpicked handoffs and continues
 - **Structured format** — captures decisions, progress, blockers, next steps, and key files
+
+#### [evolve](./evolve/)
+
+Post-development change journal. After any change to already-built functionality, records a numbered EVO entry — problem, root cause, fix, lesson — commits it as `evo(EVO-NNN)`, and pushes to claim the number against parallel sessions.
+
+- **Root cause + lesson per entry** — actionable "SPEC MUST / ALWAYS / NEVER" takeaways for the next version's spec
+- **Collision-safe numbering** — the number is finalized at commit time; the push claims it, and a rejected push means renumber-and-retry
+- **Activation gate** — active only in projects that keep an evolution log; first use sets it up (creates the log, registers the convention in CLAUDE.md)
+- **Pairs with handoff** — handoffs reference EVO numbers instead of restating changes
+
+**Prerequisites:** Git repository. Proven in production use: 500+ entries.
 
 ---
 

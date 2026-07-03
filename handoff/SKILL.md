@@ -75,7 +75,8 @@ Use this template:
 <!-- For branch handoffs: this section is optional — omit if the branch task is entirely new. -->
 
 [Concrete list of completed work. Reference specific files, commits, functions changed.
-Be precise — the next session can't see this conversation.]
+Be precise — the next session can't see this conversation. If the project keeps an
+evolution log, reference EVO-NNN entries instead of restating those changes.]
 
 ## Current state
 <!-- For branch handoffs: optional — include only if there's relevant state the parallel session needs. -->
