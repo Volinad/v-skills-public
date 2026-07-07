@@ -99,6 +99,24 @@ python <skill-path>/scripts/yt_transcript.py "URL" --proxy http://127.0.0.1:8080
 
 Useful if YouTube rate-limits the IP or for geo-restricted content.
 
+### Fallback: yt-dlp (when the script fails)
+
+If the bundled script fails (library breakage after a YouTube change, persistent blocks)
+and `yt-dlp` is installed, use it as the second tier before falling back to the browser:
+
+```bash
+yt-dlp --skip-download --write-subs --write-auto-subs \
+  --sub-langs "en.*" --sub-format json3 -o "out.%(ext)s" "URL"
+```
+
+Hard-won rules for this path:
+- **Always `json3`, never VTT/SRT** — auto-generated VTT repeats every line twice (rolling
+  captions); json3 is the only clean source. Flatten `events[].segs[].utf8` to text.
+- **429 / "Sign in to confirm you're not a bot" = the IP is flagged. STOP.** Do not retry
+  in a loop — it makes the flag worse. Switch to a proxy or the browser path.
+- On the first failure only, try `yt-dlp -U` (YouTube changes break old versions), retry
+  once, then stop and move to the next tier.
+
 ## Workflow Patterns
 
 ### "Summarize this YouTube video"

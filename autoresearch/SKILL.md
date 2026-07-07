@@ -97,6 +97,13 @@ The `--metric` name specifies which metric is primary for optimization. All othe
 
 Exit code 0 = success. Non-zero = failure (recorded in journal, counts toward consecutive failure limit).
 
+**The eval command is the contract — never game it.** Do not modify the eval script, weaken
+or skip its tests/filters, narrow the dataset, or special-case inputs so the metric improves:
+that is reward hacking — optimizing the measurement instead of the system — and it invalidates
+the entire session's results. In code mode the eval command and everything it depends on are
+READ-ONLY. If the eval itself looks wrong or unfair, STOP and report to the user — changing
+the eval is the owner's decision, and doing so resets all baselines.
+
 ### Parameter Passing (parameter mode)
 
 For each experiment, you write the params dict to:

@@ -135,8 +135,9 @@ evolution log, reference EVO-NNN entries instead of restating those changes.]
 ## Current state
 <!-- For branch handoffs: optional — include only if there's relevant state the parallel session needs. -->
 
-[What's working, what's broken, what's half-finished. Include any running processes,
-temporary files, or state that the next session should know about.]
+[What's working, what's broken, what's half-finished. Phrase as status, not actions —
+DONE / PARTIAL / NOT STARTED per item. Include any running processes, temporary files,
+or state that the next session should know about.]
 
 ## Next steps
 
@@ -161,8 +162,10 @@ these first to rebuild context. Group by role if helpful.]
 
 ## Errors & workarounds
 
-[Errors encountered during this session and how they were resolved (or not).
-This prevents the next session from hitting the same walls.]
+[Errors encountered during this session and how they were resolved (or not), plus traps:
+approaches that FAILED, and things the next session will be TEMPTED to do wrong
+("do NOT bump the SDK to v3 — it breaks the streaming API"). This prevents the next
+session from hitting the same walls.]
 
 - `ECONNREFUSED on port 5432` — PostgreSQL wasn't running in Docker; fixed with `docker compose up -d`
 - `TypeError: session.validate is not a function` — was importing from wrong module; switched to `session-store.ts`
@@ -254,6 +257,10 @@ every decision rationale, every "we tried X and it didn't work because Y" matter
 Avoid vague language like "continue the work" or "fix the remaining issues". Instead:
 "The migration script at `db/migrate_v3.py` fails on line 47 when the `users` table
 has NULL values in the `email` column. The fix is probably a COALESCE but needs testing."
+
+**Never put secrets in a handoff.** No API keys, tokens, passwords, or PII — a handoff is a
+plain file that outlives the session and may be committed. Reference where credentials live
+(".env.local, not committed") — never their values.
 
 ## Claiming the number (do this last)
 
@@ -376,6 +383,11 @@ If there are unpicked handoffs and none was named:
 
 If the user says "continue" or "let's go" without specifying — show the list if there
 are multiple, or auto-pick if there's only one.
+
+Treat the handoff's claims as context to VERIFY against the repo, not facts to trust
+blindly — the world may have moved since it was written (other sessions' commits,
+refactors, reverted work). Spot-check the key claims as you start: the files it names
+exist, the states it asserts still hold.
 
 ## Auto-register in project CLAUDE.md
 
